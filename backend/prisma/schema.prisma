@@ -1,0 +1,148 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  STUDENT
+  ADMIN
+}
+
+model User {
+  id          String    @id @default(cuid())
+  name        String
+  email       String    @unique
+  matricNo    String    @unique
+  faculty     String
+  department  String
+  password    String
+  role        Role      @default(STUDENT)
+  xp          Int       @default(0)
+  level       Int       @default(1)
+  streak      Int       @default(0)
+  lastLoginAt DateTime?
+  suspended   Boolean   @default(false)
+  avatarColor String    @default("#006B35")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  progress         Progress[]
+  quizAttempts     QuizAttempt[]
+  scenarioAttempts ScenarioAttempt[]
+  userBadges       UserBadge[]
+}
+
+model Module {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  content     String   @db.LongText
+  icon        String   @default("Shield")
+  color       String   @default("#006B35")
+  order       Int
+  xpReward    Int      @default(50)
+  published   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  quizQuestions QuizQuestion[]
+  progress      Progress[]
+}
+
+model Progress {
+  id          String    @id @default(cuid())
+  userId      String
+  moduleId    String
+  completed   Boolean   @default(false)
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  module Module @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, moduleId])
+}
+
+model QuizQuestion {
+  id          String  @id @default(cuid())
+  moduleId    String
+  question    String  @db.Text
+  options     String  @db.Text
+  answer      Int
+  explanation String? @db.Text
+  order       Int     @default(0)
+
+  module Module @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+}
+
+model QuizAttempt {
+  id        String   @id @default(cuid())
+  userId    String
+  moduleId  String
+  score     Int
+  total     Int
+  xpEarned  Int
+  answers   String   @db.Text
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Scenario {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  incident    String
+  thumbnail   String   @default("🎭")
+  steps       String   @db.LongText
+  xpReward    Int      @default(100)
+  difficulty  String   @default("Medium")
+  published   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  attempts ScenarioAttempt[]
+}
+
+model ScenarioAttempt {
+  id         String   @id @default(cuid())
+  userId     String
+  scenarioId String
+  score      Int
+  maxScore   Int
+  xpEarned   Int
+  choices    String   @db.Text
+  createdAt  DateTime @default(now())
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  scenario Scenario @relation(fields: [scenarioId], references: [id], onDelete: Cascade)
+}
+
+model Badge {
+  id          String   @id @default(cuid())
+  name        String
+  description String
+  icon        String
+  condition   String
+  xpThreshold Int?
+  moduleCount Int?
+  createdAt   DateTime @default(now())
+
+  userBadges UserBadge[]
+}
+
+model UserBadge {
+  id       String   @id @default(cuid())
+  userId   String
+  badgeId  String
+  earnedAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge Badge @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, badgeId])
+}
