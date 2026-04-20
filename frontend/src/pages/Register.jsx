@@ -5,7 +5,7 @@ import { Shield, Mail, Lock, User, Hash, Building2, Eye, EyeOff } from 'lucide-r
 import toast from 'react-hot-toast';
 import useStore from '../store/useStore';
 
-const FACULTIES = ['Computing & Information Technology', 'Engineering', 'Sciences', 'Management Sciences', 'Law', 'Social Sciences', 'Arts & Humanities', 'Education', 'Agriculture', 'Medicine & Health Sciences'];
+const FACULTIES = ['Computing & Information Technology', 'Management and Social Sciences', 'Law', 'Medicine & Health Sciences'];
 
 export default function Register() {
   const [form, setForm] = useState({ name: '', email: '', matricNo: '', faculty: '', department: '', password: '', confirmPassword: '' });
